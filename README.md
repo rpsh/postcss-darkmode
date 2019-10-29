@@ -43,11 +43,12 @@ gulp.task("css", () => {
 
 Before:
 
-```CSS
+```css
 .box {
-  width: 100%;
-  /* darkmode: ignore next */
+	width: 100%;
+	/* darkmode: ignore next */
 	color: #a1a1a1;
+	/* darkmode: {#f0f} */
 	caret-color: rgba(244, 20, 20, 0.3);
 	border: 1px solid #ffb821;
 	background: #fff url(icon.png);
@@ -62,16 +63,19 @@ Before:
 	color: pink;
 	border: 1px solid green;
 	background: #fff;
+	/* darkmode: { linear-gradient(90deg, rgba(18, 18, 18, 0.2), #121212 40px) } */
+	background: linear-gradient(90deg, rgba(255, 255, 255, 0.2), #fff 40px);
 }
 ```
 
 After:
 
-```CSS
+```css
 .box {
-  width: 100%;
-  /* darkmode: ignore next */
+	width: 100%;
+	/* darkmode: ignore next */
 	color: #a1a1a1;
+	/* darkmode: {#f0f} */
 	caret-color: rgba(244, 20, 20, 0.3);
 	border: 1px solid #ffb821;
 	background: #fff url(icon.png);
@@ -86,18 +90,21 @@ After:
 	color: pink;
 	border: 1px solid green;
 	background: #fff;
+	/* darkmode: { linear-gradient(90deg, rgba(18, 18, 18, 0.2), #121212 40px) } */
+	background: linear-gradient(90deg, rgba(255, 255, 255, 0.2), #fff 40px);
 }
 @media (prefers-color-scheme: dark) {
 	.box {
-		caret-color: #e91e63;
+		caret-color: #f0f;
 		border-color: #ffaf04;
 		background-color: #121212;
-		column-rule-color: #e5e5ff;
-  }
-  .box3 {
+		column-rule-color: #1a1aff;
+	}
+	.box3 {
 		color: #ff93a6;
-		border-color: #00f300;
+		border-color: #008d00;
 		background: #121212;
+		background: linear-gradient(90deg, rgba(18, 18, 18, 0.2), #121212 40px);
 	}
 }
 ```

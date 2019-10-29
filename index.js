@@ -3,8 +3,9 @@ const helpers = require("postcss-message-helpers");
 const Color = require("color");
 const cssnano = require("cssnano");
 
-const IGNORE_NEXT = /(!\s*)?darkmode:\s*ignore\s+next/i;
+const DARKMODE_IGNORE_NEXT = /(!\s*)?darkmode:\s*ignore\s+next/i;
 const DARKMODE_COMMENTS = /(!\s*)?darkmode:\s*(off|on)/i;
+const DARKMODE_ASSIGN = /(!\s*)?darkmode:\s*{([^}])*}/i;
 
 function parseColor(value) {
 	try {
@@ -27,12 +28,17 @@ function parseDeclColor(decl) {
 			decl.prop.includes("text-decoration")
 		) {
 			let arr = decl.value.split(" ");
-			if (arr && arr.length > 1 && arr[arr.length - 1]) {
+			if (
+				arr &&
+				arr.length > 1 &&
+				arr[arr.length - 1] &&
+				arr[arr.length - 1] !== "transparent"
+			) {
 				inputColor = parseColor(arr[arr.length - 1]);
 			}
 		} else if (decl.prop === "background") {
 			let arr = decl.value.split(" ");
-			if (arr && arr[0]) {
+			if (arr && arr[0] && arr[0] !== "transparent") {
 				inputColor = parseColor(arr[0]);
 			}
 		}
@@ -42,8 +48,13 @@ function parseDeclColor(decl) {
 }
 
 function modifyColor(decl, dictColors, assignColor, ratio) {
+	// 注释指定替换颜色
+	if (decl._assignValue) {
+		return decl._assignValue;
+	}
+
 	let inputColor = parseDeclColor(decl);
-	let color = inputColor.rgb().string();
+	let color = inputColor && inputColor.rgb().string();
 	let index = dictColors.indexOf(color);
 
 	// 手动设定的颜色对照表
@@ -72,7 +83,7 @@ function modifyColor(decl, dictColors, assignColor, ratio) {
 			return helpers.try(() => {
 				let output = inputColor.isLight()
 					? inputColor.darken(ratio)
-					: inputColor.lighten(1 - ratio);
+					: inputColor.lighten(ratio);
 				return decl.value.includes("rgb") ? output.rgb() : output.hex();
 			}, decl.source);
 			break;
@@ -80,7 +91,7 @@ function modifyColor(decl, dictColors, assignColor, ratio) {
 			return helpers.try(() => {
 				return inputColor.isLight()
 					? inputColor.darken(ratio)
-					: inputColor.lighten(1 - ratio);
+					: inputColor.lighten(ratio);
 			}, decl.source);
 			break;
 		default:
@@ -110,10 +121,24 @@ module.exports = postcss.plugin("postcss-darkmode", function(opts) {
 
 			if (node.parent) {
 				let p = node.prev();
-				if (p && p.type === "comment" && IGNORE_NEXT.test(p.text)) {
+
+				// 注释声明忽略下一行
+				if (
+					p &&
+					p.type === "comment" &&
+					DARKMODE_IGNORE_NEXT.test(p.text)
+				) {
 					node._darkmodeDisabled = true;
 					node._darkmodeSelfDisabled = true;
 					return true;
+				}
+
+				// 注释声明指定替换颜色
+				if (p && p.type === "comment" && DARKMODE_ASSIGN.test(p.text)) {
+					let m = p.text.match(/\{([^\}]*)\}/i);
+					if (m && m[1]) {
+						node._assignValue = m[1];
+					}
 				}
 			}
 
@@ -165,7 +190,7 @@ module.exports = postcss.plugin("postcss-darkmode", function(opts) {
 
 			let inputColor = parseDeclColor(decl);
 
-			if (!inputColor) {
+			if (!inputColor && !decl._assignValue) {
 				return;
 			}
 
@@ -196,7 +221,7 @@ module.exports = postcss.plugin("postcss-darkmode", function(opts) {
 			);
 
 			// 一些包含颜色的属性
-			if (decl && !parseColor(decl.value)) {
+			if (decl && !decl._assignValue && !parseColor(decl.value)) {
 				if (
 					decl.prop.includes("border") ||
 					decl.prop.includes("outline") ||

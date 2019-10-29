@@ -1,21 +1,21 @@
 .box {
 	width: 100%;
+	/* darkmode: ignore next */
 	color: #a1a1a1;
+	/* darkmode: {#f0f} */
 	caret-color: rgba(244, 20, 20, 0.3);
 	border: 1px solid #ffb821;
 	background: #fff url(icon.png);
 	column-rule: thick inset #0000ff;
 
 	.inner {
-		/* darkmode: ignore next */
 		color: orange;
 		width: 100px;
-		background: #fff;
 		border-left: 1px solid #000;
 		-webkit-text-emphasis: filled double-circle orange;
 
 		.hello {
-			color: #f0f;
+			color: #ff5c38;
 			border-width: 2px;
 			text-decoration: wavy underline green;
 		}
@@ -30,6 +30,8 @@
 	color: pink;
 	border: 1px solid green;
 	background: #fff;
+	/* darkmode: { linear-gradient(90deg, rgba(18, 18, 18, 0.2), #121212 40px) } */
+	background: linear-gradient(90deg, rgba(255, 255, 255, 0.2), #fff 40px);
 }
 .box4 {
 	color: #000;
@@ -40,10 +42,10 @@
 	color: #ebebeb;
 }
 .foo {
-	color: hsl(20, 30, 20);
+	font-size: 30px;
+	line-height: 1.2;
 	outline: 2px solid green;
 	-webkit-text-fill-color: transparent;
 	-webkit-background-clip: text;
-	background-image: linear-gradient(180deg, #ffb821 0, #ff5c38 45%, #ff1459);
-	border: 1px solid #f0f;
+	background-image: linear-gradient(180deg, green 0, orange 100%);
 }

@@ -37,4 +37,4 @@ gulp.task("sass", function() {
 		.pipe(gulp.dest("./dist/css"));
 });
 
-gulp.task("default", ["clean", "sass"]);
+gulp.task("default", ["sass"]);
