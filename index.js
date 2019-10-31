@@ -66,7 +66,8 @@ function modifyColor(decl, dictColors, assignColor, ratio) {
 	if (inputColor.hex() == "#FFFFFF" && ~decl.prop.indexOf("background")) {
 		//  google 推荐的暗色颜色色值
 		// https://material.io/design/color/dark-theme.html
-		return "#121212";
+		let output = parseColor("rgba(18, 18, 18, " + inputColor.valpha + ")");
+		return decl.value.includes("rgb") ? output.rgb() : output.hex();
 	}
 
 	let hslColor = inputColor.hsl();
