@@ -56,6 +56,7 @@ function modifyColor(decl, dictColors, assignColor, ratio) {
 	let inputColor = parseDeclColor(decl);
 	let color = inputColor && inputColor.rgb().string();
 	let index = dictColors.indexOf(color);
+	let output;
 
 	// 手动设定的颜色对照表
 	if (~index) {
@@ -66,34 +67,35 @@ function modifyColor(decl, dictColors, assignColor, ratio) {
 	if (inputColor.hex() == "#FFFFFF" && ~decl.prop.indexOf("background")) {
 		//  google 推荐的暗色颜色色值
 		// https://material.io/design/color/dark-theme.html
-		let output = parseColor("rgba(18, 18, 18, " + inputColor.valpha + ")");
+		output = parseColor("rgba(18, 18, 18, " + inputColor.valpha + ")");
 		return decl.value.includes("rgb") ? output.rgb() : output.hex();
 	}
 
 	let hslColor = inputColor.hsl();
-	// 背景颜色是白色/黑色，则处理为反色
-	if (hslColor.color && !hslColor.color[0] && !hslColor.color[1]) {
-		let light = 100 - hslColor.color[2];
+
+	if (hslColor.color) {
+		let light = hslColor.color[2];
+		let h = hslColor.color[0],
+			s = hslColor.color[1];
+
+		if (!hslColor.color[0] && !hslColor.color[1]) {
+			// 背景颜色是白色/黑色，则处理为反色
+			h = 0;
+			s = 0;
+		}
+
+		light = 100 - light * (1 - ratio);
 		light = light <= 10 ? light + 10 : light >= 90 ? light - 10 : light;
-		return parseColor(`hsl(0, 0%, ${light}%)`).hex();
+		output = parseColor(`hsla(${h}, ${s}%, ${light}%, ${hslColor.valpha})`);
 	}
 
 	// 根据设定参数降低颜色透明度
 	switch (inputColor.model) {
 		case "rgb":
-			return helpers.try(() => {
-				let output = inputColor.isLight()
-					? inputColor.darken(ratio)
-					: inputColor.lighten(ratio);
-				return decl.value.includes("rgb") ? output.rgb() : output.hex();
-			}, decl.source);
+			return decl.value.includes("rgb") ? output.rgb() : output.hex();
 			break;
 		case "hsl":
-			return helpers.try(() => {
-				return inputColor.isLight()
-					? inputColor.darken(ratio)
-					: inputColor.lighten(ratio);
-			}, decl.source);
+			return output.hsl().string();
 			break;
 		default:
 			return;
