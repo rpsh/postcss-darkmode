@@ -17,7 +17,7 @@ $ npm install postcss-darkmode --save-dev
 ```js
 const gulp = require("gulp");
 const postcss = require("gulp-postcss");
-const sprite = require("postcss-darkmode");
+const darkmode = require("postcss-darkmode");
 gulp.task("css", () => {
 	return gulp
 		.src("*.css")
