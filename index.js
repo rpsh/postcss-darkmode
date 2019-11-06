@@ -63,6 +63,11 @@ function modifyColor(decl, dictColors, assignColor, ratio) {
 		return assignColor[index][1] || color;
 	}
 
+	// ratio为0 ，不自动调整颜色
+	if (ratio === 0) {
+		return null;
+	}
+
 	//纯白颜色处理
 	if (inputColor.hex() == "#FFFFFF" && ~decl.prop.indexOf("background")) {
 		//  google 推荐的暗色颜色色值
@@ -222,6 +227,10 @@ module.exports = postcss.plugin("postcss-darkmode", function(opts) {
 				opts.assignColors,
 				ratio
 			);
+
+			if (!outputColor) {
+				return false;
+			}
 
 			// 一些包含颜色的属性
 			if (decl && !decl._assignValue && !parseColor(decl.value)) {

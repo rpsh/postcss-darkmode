@@ -24,7 +24,7 @@ gulp.task("css", () => {
 		.pipe(
 			postcss([
 				darkmode({
-					ratio: 10, // 亮度调整的百分比，默认为 10%
+					ratio: 10, // 亮度调整的百分比，默认为 10%， 如果为0，再不自动调整颜色亮度
 					assignColors: [
 						// 颜色替换表，不在此表的颜色将按照 ratio 进行亮度调整
 						["#D6AB56"], // 保持颜色不变
