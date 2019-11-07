@@ -32,6 +32,7 @@ gulp.task("sass", function() {
 						["#a1a1a1", "rgba(233, 237, 243, 0.1)"],
 						["rgba(244, 20, 20, 0.3)", "#E91E63"],
 					],
+					skipExistingDarkMediaQuery: true,
 				}),
 			])
 		)

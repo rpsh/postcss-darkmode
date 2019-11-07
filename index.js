@@ -110,6 +110,11 @@ function modifyColor(decl, dictColors, assignColor, ratio) {
 module.exports = postcss.plugin("postcss-darkmode", function(opts) {
 	opts = opts || {};
 
+	let skipExistingDarkMediaQuery =
+		opts.skipExistingDarkMediaQuery === undefined
+			? true
+			: opts.skipExistingDarkMediaQuery;
+
 	let dictColors = [];
 	opts.assignColors.forEach(item => {
 		dictColors.push(
@@ -184,6 +189,17 @@ module.exports = postcss.plugin("postcss-darkmode", function(opts) {
 
 		let rules = [];
 		style.walkDecls(function(decl) {
+			// CSS 中既有的 darkmode media query 不处理
+			if (
+				skipExistingDarkMediaQuery &&
+				decl.parent &&
+				decl.parent.parent &&
+				decl.parent.parent.name === "media" &&
+				decl.parent.parent.params === "(prefers-color-scheme: dark)"
+			) {
+				return undefined;
+			}
+
 			// 注释声明不需要处理
 			if (checkDisabled(decl)) return undefined;
 

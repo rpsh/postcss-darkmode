@@ -34,6 +34,7 @@ gulp.task("css", () => {
 						["#a1a1a1", "rgba(233, 237, 243, 0.1)"],
 						["rgba(244, 20, 20, 0.3)", "#E91E63"],
 					],
+					skipExistingDarkMediaQuery: true, //不处理 css 文件中已有的 darmkmode Media Query 中的颜色规则， 默认为 true
 				}),
 			])
 		)
