@@ -4,13 +4,20 @@ Generate darkmode style from css file.
 
 分析 CSS 文件中的颜色，生成「深色模式」的样式。
 
-## Installation
+## Installation 安装
 
 ```bash
 $ npm install postcss-darkmode --save-dev
 ```
 
-## Usage
+## Control Comments 注释控制
+
+-   `/* darkmode: off */` Disable all Darkmode translations for the whole block both before and after the comment. 这个注释所在的 css 规则块都不进行「深色模式」转化
+-   `/* darkmode: ignore next */` Disable Darkmode translations only for the next property. 只忽略紧跟这个注释后的一条
+-   `/* darkmode: all off */` Disable Darkmode translations for the whole CSS file. 忽略整个 css 文件
+-   `/* darkmode: {#f00} */` Replace the next property with `#f00`. 使用 `#f00` 替换紧跟这个注释后的规则的值
+
+## Usage 使用
 
 ### Use gulp
 

@@ -6,6 +6,7 @@ const cssnano = require("cssnano");
 const DARKMODE_IGNORE_NEXT = /(!\s*)?darkmode:\s*ignore\s+next/i;
 const DARKMODE_COMMENTS = /(!\s*)?darkmode:\s*(off|on)/i;
 const DARKMODE_ASSIGN = /(!\s*)?darkmode:\s*{([^}])*}/i;
+const DARKMODE_COMMENTS_ALL_OFF = /(!\s*)?darkmode:\s*all\s*off/i;
 
 function parseColor(value) {
 	try {
@@ -35,6 +36,12 @@ function parseDeclColor(decl) {
 				arr[arr.length - 1] !== "transparent"
 			) {
 				inputColor = parseColor(arr[arr.length - 1]);
+			}
+			if (!inputColor) {
+				let result = decl.value.match(/(rgb|hsl)a?\([^)]*\)/);
+				if (result && result[0]) {
+					inputColor = parseColor(result[0]);
+				}
 			}
 		} else if (decl.prop === "background") {
 			let arr = decl.value.split(" ");
@@ -97,7 +104,9 @@ function modifyColor(decl, dictColors, assignColor, ratio) {
 	// 根据设定参数降低颜色透明度
 	switch (inputColor.model) {
 		case "rgb":
-			return decl.value.includes("rgb") ? output.rgb() : output.hex();
+			return decl.value.includes("rgb")
+				? output.rgb().string()
+				: output.hex();
 			break;
 		case "hsl":
 			return output.hsl().string();
@@ -187,6 +196,18 @@ module.exports = postcss.plugin("postcss-darkmode", function(opts) {
 			return value;
 		}
 
+		let skipFile = false;
+
+		style.walkComments(comment => {
+			if (comment && DARKMODE_COMMENTS_ALL_OFF.test(comment.text)) {
+				skipFile = true;
+			}
+		});
+
+		if (skipFile) {
+			return;
+		}
+
 		let rules = [];
 		style.walkDecls(function(decl) {
 			// CSS 中既有的 darkmode media query 不处理
@@ -257,12 +278,7 @@ module.exports = postcss.plugin("postcss-darkmode", function(opts) {
 					decl.prop.includes("text-emphasis") ||
 					decl.prop.includes("text-decoration")
 				) {
-					let arr = decl.value.split(" ");
-					if (
-						arr &&
-						arr.length > 1 &&
-						parseColor(arr[arr.length - 1])
-					) {
+					if (outputColor) {
 						media.first.append(
 							`${decl.parent.selector}{${decl.prop}-color:${outputColor}}`
 						);
