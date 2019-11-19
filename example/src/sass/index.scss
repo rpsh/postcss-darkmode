@@ -5,7 +5,7 @@
 	/* darkmode: {#f0f} */
 	caret-color: rgba(244, 20, 20, 0.3);
 	border: 1px solid #ffb821;
-	background: #fff url(icon.png);
+	background: #fff url(https://example.com/icon.png);
 	column-rule: thick inset #0000ff;
 
 	.inner {
@@ -38,7 +38,7 @@
 	background: linear-gradient(to right, #f0f, #00f);
 }
 .box5 {
-	background: #888 url(a.png);
+	background: #888 url(https://example.com/box.png);
 	color: #ebebeb;
 }
 .foo {

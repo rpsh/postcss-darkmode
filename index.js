@@ -124,6 +124,8 @@ module.exports = postcss.plugin("postcss-darkmode", function(opts) {
 			? true
 			: opts.skipExistingDarkMediaQuery;
 
+	let excludeFiles = opts.excludeFiles || [];
+
 	let dictColors = [];
 	opts.assignColors.forEach(item => {
 		dictColors.push(
@@ -196,7 +198,9 @@ module.exports = postcss.plugin("postcss-darkmode", function(opts) {
 			return value;
 		}
 
-		let skipFile = false;
+		let skipFile = excludeFiles.some(item => {
+			return style.source.input.file.match(item);
+		});
 
 		style.walkComments(comment => {
 			if (comment && DARKMODE_COMMENTS_ALL_OFF.test(comment.text)) {

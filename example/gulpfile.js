@@ -33,6 +33,7 @@ gulp.task("sass", function() {
 						["rgba(244, 20, 20, 0.3)", "#E91E63"],
 					],
 					skipExistingDarkMediaQuery: true,
+					excludeFiles: ["style.css"], // 不需要 darkmode 转化的文件，支持正则匹配
 				}),
 			])
 		)
