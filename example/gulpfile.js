@@ -34,6 +34,15 @@ gulp.task("sass", function() {
 					],
 					skipExistingDarkMediaQuery: true,
 					excludeFiles: ["style.css"], // 不需要 darkmode 转化的文件，支持正则匹配
+					splitFiles: {
+						split: true,
+						suffix: ".darkmode",
+						destDir: "../../dist/css",
+					},
+					inject: {
+						injectSelctor: ".__darkmode",
+						baseSelector: "html",
+					},
 				}),
 			])
 		)

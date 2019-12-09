@@ -15,9 +15,8 @@
 		"gulp-sass": "^4.0.2",
 		"mini-css-extract-plugin": "^0.8.0",
 		"node-sass": "^4.13.0",
-		"postcss-darkmode": "^1.0.6",
+		"postcss-darkmode": "^1.0.8",
 		"postcss-loader": "^3.0.0",
-		"postcss-message-helpers": "^2.0.0",
 		"sass-loader": "^8.0.0",
 		"style-loader": "^1.0.0",
 		"webpack": "^4.41.2"

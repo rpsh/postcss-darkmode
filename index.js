@@ -1,5 +1,6 @@
 const postcss = require("postcss");
-const helpers = require("postcss-message-helpers");
+const path = require("path");
+const fs = require("fs");
 const Color = require("color");
 const cssnano = require("cssnano");
 
@@ -125,6 +126,13 @@ module.exports = postcss.plugin("postcss-darkmode", function(opts) {
 			: opts.skipExistingDarkMediaQuery;
 
 	let excludeFiles = opts.excludeFiles || [];
+	let injectSelctor = (opts.inject && opts.inject.injectSelctor) || undefined,
+		baseSelector = (opts.inject && opts.inject.baseSelector) || undefined;
+
+	let split = opts.splitFiles && opts.splitFiles.split,
+		splitSuffix =
+			(opts.splitFiles && opts.splitFiles.suffix) || ".darkmode",
+		splitDestDir = (opts.splitFiles && opts.splitFiles.destDir) || "";
 
 	let dictColors = [];
 	opts.assignColors.forEach(item => {
@@ -250,6 +258,12 @@ module.exports = postcss.plugin("postcss-darkmode", function(opts) {
 		}
 
 		let media = postcss.parse("@media (prefers-color-scheme: dark) {}");
+		let node = media.first;
+
+		if (injectSelctor || split) {
+			media = postcss.root();
+			node = media;
+		}
 
 		let ratio = Number.isInteger(opts.ratio)
 			? Number(opts.ratio) / 100
@@ -273,6 +287,16 @@ module.exports = postcss.plugin("postcss-darkmode", function(opts) {
 				return false;
 			}
 
+			// 选择器处理
+			let selector = decl.parent.selector;
+			if (injectSelctor) {
+				if (decl.parent.selector === baseSelector) {
+					selector = selector + injectSelctor;
+				} else {
+					selector = injectSelctor + " " + selector;
+				}
+			}
+
 			// 一些包含颜色的属性
 			if (decl && !decl._assignValue && !parseColor(decl.value)) {
 				if (
@@ -283,25 +307,55 @@ module.exports = postcss.plugin("postcss-darkmode", function(opts) {
 					decl.prop.includes("text-decoration")
 				) {
 					if (outputColor) {
-						media.first.append(
-							`${decl.parent.selector}{${decl.prop}-color:${outputColor}}`
+						node.append(
+							`${selector}{${decl.prop}-color:${outputColor}}`
 						);
 					}
 				} else if (decl.prop === "background") {
-					media.first.append(
-						`${decl.parent.selector}{${decl.prop}-color:${outputColor}}`
+					node.append(
+						`${selector}{${decl.prop}-color:${outputColor}}`
 					);
 				}
 			} else {
-				media.first.append(
-					`${decl.parent.selector}{${decl.prop}:${outputColor}}`
-				);
+				node.append(`${selector}{${decl.prop}:${outputColor}}`);
 			}
 		});
 		// 合并相同的选择器
 		let minify = await postcss([cssnano]).process(media, {
 			from: undefined,
 		});
-		style.append(minify.css);
+
+		if (split) {
+			let splitFilePath = getSplitFilename(
+				style.source.input.file,
+				splitDestDir,
+				splitSuffix
+			);
+			saveFile(splitFilePath, minify.css);
+		} else {
+			style.append(minify.css);
+		}
 	};
 });
+
+function getSplitFilename(filePath, dir, suffix) {
+	let fileDir = path.dirname(filePath),
+		fileName = path.basename(filePath);
+
+	let destDir = path.join(fileDir, dir);
+
+	var position = fileName.lastIndexOf(".css"),
+		result = "";
+
+	result = fileName.substring(0, position);
+	result += suffix;
+	result += ".css";
+
+	return path.join(destDir, result);
+}
+
+function saveFile(filepath, css) {
+	if (css) {
+		fs.writeFileSync(filepath, css);
+	}
+}

@@ -1,6 +1,6 @@
 {
 	"name": "postcss-darkmode",
-	"version": "1.0.7",
+	"version": "1.0.8",
 	"description": "PostCSS Darkmode plugin that generates darkmode style from css file",
 	"keywords": [
 		"postcss",
@@ -22,7 +22,6 @@
 	"dependencies": {
 		"color": "^3.1.2",
 		"cssnano": "^4.1.10",
-		"gulp-postcss": "^8.0.0",
-		"postcss-message-helpers": "^2.0.0"
+		"gulp-postcss": "^8.0.0"
 	}
 }
