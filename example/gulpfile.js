@@ -35,13 +35,14 @@ gulp.task("sass", function() {
 					skipExistingDarkMediaQuery: true,
 					excludeFiles: ["style.css"], // 不需要 darkmode 转化的文件，支持正则匹配
 					splitFiles: {
-						split: true,
-						suffix: ".darkmode",
-						destDir: "../../dist/css",
+						enable: true,
+						suffix: ".darkmode", //深色css文件名后缀，比如 filename.css 的分离出深色文件： filename.darkmode.css
+						destDir: "../../dist/css", //文件输出目录（相对当前要处理的css文件所在目录）
 					},
 					inject: {
-						injectSelctor: ".__darkmode",
-						baseSelector: "html",
+						enable: true,
+						injectSelctor: ".__darkmode__", // 不使用媒体查询模式，而通过类名切换深色样式
+						baseSelector: "html", // 这个类名要添加在哪个选择器上
 					},
 				}),
 			])

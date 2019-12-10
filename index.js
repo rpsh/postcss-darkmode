@@ -126,10 +126,11 @@ module.exports = postcss.plugin("postcss-darkmode", function(opts) {
 			: opts.skipExistingDarkMediaQuery;
 
 	let excludeFiles = opts.excludeFiles || [];
-	let injectSelctor = (opts.inject && opts.inject.injectSelctor) || undefined,
+	let inject = (opts.inject && opts.inject.enable) || undefined,
+		injectSelctor = (opts.inject && opts.inject.injectSelctor) || undefined,
 		baseSelector = (opts.inject && opts.inject.baseSelector) || undefined;
 
-	let split = opts.splitFiles && opts.splitFiles.split,
+	let split = opts.splitFiles && opts.splitFiles.enable,
 		splitSuffix =
 			(opts.splitFiles && opts.splitFiles.suffix) || ".darkmode",
 		splitDestDir = (opts.splitFiles && opts.splitFiles.destDir) || "";
@@ -260,7 +261,7 @@ module.exports = postcss.plugin("postcss-darkmode", function(opts) {
 		let media = postcss.parse("@media (prefers-color-scheme: dark) {}");
 		let node = media.first;
 
-		if (injectSelctor || split) {
+		if (inject || split) {
 			media = postcss.root();
 			node = media;
 		}
@@ -289,7 +290,7 @@ module.exports = postcss.plugin("postcss-darkmode", function(opts) {
 
 			// 选择器处理
 			let selector = decl.parent.selector;
-			if (injectSelctor) {
+			if (inject && injectSelctor) {
 				if (decl.parent.selector === baseSelector) {
 					selector = selector + injectSelctor;
 				} else {
@@ -325,7 +326,7 @@ module.exports = postcss.plugin("postcss-darkmode", function(opts) {
 			from: undefined,
 		});
 
-		if (split) {
+		if (split && splitDestDir) {
 			let splitFilePath = getSplitFilename(
 				style.source.input.file,
 				splitDestDir,
@@ -344,7 +345,7 @@ function getSplitFilename(filePath, dir, suffix) {
 
 	let destDir = path.join(fileDir, dir);
 
-	var position = fileName.lastIndexOf(".css"),
+	var position = fileName.lastIndexOf("."),
 		result = "";
 
 	result = fileName.substring(0, position);
