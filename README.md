@@ -88,7 +88,7 @@ module.exports = {
 									},
 									inject: {
 										enable: false, // 是否不使用媒体查询模式，而通过类名切换深色样式
-										injectSelctor: ".__darkmode__", // 切换深色样式的类名
+										injectSelector: ".__darkmode__", // 切换深色样式的类名
 										baseSelector: "html", // 这个类名要添加在哪个选择器上
 									},
 								}),
@@ -133,7 +133,7 @@ gulp.task("css", () => {
 					},
 					inject: {
 						enable: false, // 是否不使用媒体查询模式，而通过类名切换深色样式
-						injectSelctor: ".__darkmode__", // 切换深色样式的类名
+						injectSelector: ".__darkmode__", // 切换深色样式的类名
 						baseSelector: "html", // 这个类名要添加在哪个选择器上
 					},
 				}),

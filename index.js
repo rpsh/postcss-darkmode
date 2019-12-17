@@ -127,7 +127,8 @@ module.exports = postcss.plugin("postcss-darkmode", function(opts) {
 
 	let excludeFiles = opts.excludeFiles || [];
 	let inject = (opts.inject && opts.inject.enable) || undefined,
-		injectSelctor = (opts.inject && opts.inject.injectSelctor) || undefined,
+		injectSelector =
+			(opts.inject && opts.inject.injectSelector) || undefined,
 		baseSelector = (opts.inject && opts.inject.baseSelector) || undefined;
 
 	let split = opts.splitFiles && opts.splitFiles.enable,
@@ -290,11 +291,11 @@ module.exports = postcss.plugin("postcss-darkmode", function(opts) {
 
 			// 选择器处理
 			let selector = decl.parent.selector;
-			if (inject && injectSelctor) {
+			if (inject && injectSelector) {
 				if (decl.parent.selector === baseSelector) {
-					selector = selector + injectSelctor;
+					selector = selector + injectSelector;
 				} else {
-					selector = injectSelctor + " " + selector;
+					selector = injectSelector + " " + selector;
 				}
 			}
 

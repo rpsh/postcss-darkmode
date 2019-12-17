@@ -41,7 +41,7 @@ gulp.task("sass", function() {
 					},
 					inject: {
 						enable: true,
-						injectSelctor: ".__darkmode__", // 不使用媒体查询模式，而通过类名切换深色样式
+						injectSelector: ".__darkmode__", // 不使用媒体查询模式，而通过类名切换深色样式
 						baseSelector: "html", // 这个类名要添加在哪个选择器上
 					},
 				}),
