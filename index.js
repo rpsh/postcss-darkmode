@@ -9,6 +9,16 @@ const DARKMODE_COMMENTS = /(!\s*)?darkmode:\s*(off|on)/i;
 const DARKMODE_ASSIGN = /(!\s*)?darkmode:\s*{([^}])*}/i;
 const DARKMODE_COMMENTS_ALL_OFF = /(!\s*)?darkmode:\s*all\s*off/i;
 
+const colorKeyWords = require("./colorKeywords");
+
+const colorDict = colorKeyWords.concat([
+	"(#[0-9A-F]{6})",
+	"(#[0-9A-F]{3})",
+	"(rgb|hsl)a?([^)]*)",
+]);
+
+const colorReg = new RegExp(colorDict.join("|"), "i");
+
 function parseColor(value) {
 	try {
 		return Color(value);
@@ -27,27 +37,13 @@ function parseDeclColor(decl) {
 			decl.prop.includes("outline") ||
 			decl.prop.includes("column-rule") ||
 			decl.prop.includes("text-emphasis") ||
-			decl.prop.includes("text-decoration")
+			decl.prop.includes("text-decoration") ||
+			decl.prop === "box-shadow" ||
+			decl.prop === "background"
 		) {
-			let arr = decl.value.split(" ");
-			if (
-				arr &&
-				arr.length > 1 &&
-				arr[arr.length - 1] &&
-				arr[arr.length - 1] !== "transparent"
-			) {
-				inputColor = parseColor(arr[arr.length - 1]);
-			}
-			if (!inputColor) {
-				let result = decl.value.match(/(rgb|hsl)a?\([^)]*\)/);
-				if (result && result[0]) {
-					inputColor = parseColor(result[0]);
-				}
-			}
-		} else if (decl.prop === "background") {
-			let arr = decl.value.split(" ");
-			if (arr && arr[0] && arr[0] !== "transparent") {
-				inputColor = parseColor(arr[0]);
+			let result = decl.value.match(colorReg);
+			if (result && result[0]) {
+				inputColor = parseColor(result[0]);
 			}
 		}
 	}
@@ -313,10 +309,19 @@ module.exports = postcss.plugin("postcss-darkmode", function(opts) {
 							`${selector}{${decl.prop}-color:${outputColor}}`
 						);
 					}
-				} else if (decl.prop === "background") {
+				} else if (
+					decl.prop === "background" &&
+					!~decl.prop.indexOf("gradient")
+				) {
 					node.append(
 						`${selector}{${decl.prop}-color:${outputColor}}`
 					);
+				} else if (decl.prop === "box-shadow") {
+					let result = decl.value.match(colorReg);
+					if (result && result[0]) {
+						let _value = decl.value.replace(result[0], outputColor);
+						node.append(`${selector}{${decl.prop}:${_value}}`);
+					}
 				}
 			} else {
 				node.append(`${selector}{${decl.prop}:${outputColor}}`);

@@ -1,6 +1,6 @@
 {
 	"name": "postcss-darkmode",
-	"version": "1.0.10",
+	"version": "1.0.11",
 	"description": "PostCSS Darkmode plugin that generates darkmode style from css file",
 	"keywords": [
 		"postcss",

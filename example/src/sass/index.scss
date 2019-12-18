@@ -8,8 +8,9 @@ html {
 	/* darkmode: {#f0f} */
 	caret-color: rgba(244, 20, 20, 0.3);
 	border: 1px solid #ffb821;
-	background: #fff url(https://example.com/icon.png);
+	background: white url(https://example.com/icon.png);
 	column-rule: thick inset #0000ff;
+	box-shadow: 0 1px 5px 0 orange;
 
 	.inner {
 		color: orange;
