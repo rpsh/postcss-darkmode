@@ -10,14 +10,12 @@ const DARKMODE_ASSIGN = /(!\s*)?darkmode:\s*{([^}])*}/i;
 const DARKMODE_COMMENTS_ALL_OFF = /(!\s*)?darkmode:\s*all\s*off/i;
 
 const colorKeyWords = require("./colorKeywords");
-
-const colorDict = colorKeyWords.concat([
+const colorRegDict = colorKeyWords.concat([
 	"(#[0-9A-F]{6})",
 	"(#[0-9A-F]{3})",
 	"(rgb|hsl)a?([^)]*)",
 ]);
-
-const colorReg = new RegExp(colorDict.join("|"), "i");
+const COLOR_REGEXP = new RegExp(colorRegDict.join("|"), "i");
 
 function parseColor(value) {
 	try {
@@ -41,7 +39,7 @@ function parseDeclColor(decl) {
 			decl.prop === "box-shadow" ||
 			decl.prop === "background"
 		) {
-			let result = decl.value.match(colorReg);
+			let result = decl.value.match(COLOR_REGEXP);
 			if (result && result[0]) {
 				inputColor = parseColor(result[0]);
 			}
@@ -104,10 +102,8 @@ function modifyColor(decl, dictColors, assignColor, ratio) {
 			return decl.value.includes("rgb")
 				? output.rgb().string()
 				: output.hex();
-			break;
 		case "hsl":
 			return output.hsl().string();
-			break;
 		default:
 			return;
 	}
@@ -317,7 +313,7 @@ module.exports = postcss.plugin("postcss-darkmode", function(opts) {
 						`${selector}{${decl.prop}-color:${outputColor}}`
 					);
 				} else if (decl.prop === "box-shadow") {
-					let result = decl.value.match(colorReg);
+					let result = decl.value.match(COLOR_REGEXP);
 					if (result && result[0]) {
 						let _value = decl.value.replace(result[0], outputColor);
 						node.append(`${selector}{${decl.prop}:${_value}}`);
