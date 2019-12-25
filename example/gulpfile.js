@@ -32,8 +32,8 @@ gulp.task("sass", function() {
 						["#a1a1a1", "rgba(233, 237, 243, 0.1)"],
 						["rgba(244, 20, 20, 0.3)", "#E91E63"],
 					],
-					skipExistingDarkMediaQuery: true,
-					excludeFiles: ["style.css"], // 不需要 darkmode 转化的文件，支持正则匹配
+					ignoreExistingDarkMediaQuery: true,
+					ignoreFiles: ["style.css"], // 不需要 darkmode 转化的文件，支持正则匹配
 					splitFiles: {
 						enable: true,
 						suffix: ".darkmode", //深色css文件名后缀，比如 filename.css 的分离出深色文件： filename.darkmode.css

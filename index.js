@@ -112,12 +112,14 @@ function modifyColor(decl, dictColors, assignColor, ratio) {
 module.exports = postcss.plugin("postcss-darkmode", function(opts) {
 	opts = opts || {};
 
-	let skipExistingDarkMediaQuery =
+	let ignoreExistingDarkMediaQuery =
+		opts.ignoreExistingDarkMediaQuery === undefined &&
 		opts.skipExistingDarkMediaQuery === undefined
 			? true
-			: opts.skipExistingDarkMediaQuery;
+			: opts.ignoreExistingDarkMediaQuery ||
+			  opts.skipExistingDarkMediaQuery;
 
-	let excludeFiles = opts.excludeFiles || [];
+	let ignoreFiles = opts.ignoreFiles || opts.excludeFiles || [];
 	let inject = (opts.inject && opts.inject.enable) || undefined,
 		injectSelector =
 			(opts.inject && opts.inject.injectSelector) || undefined,
@@ -200,17 +202,17 @@ module.exports = postcss.plugin("postcss-darkmode", function(opts) {
 			return value;
 		}
 
-		let skipFile = excludeFiles.some(item => {
+		let ignoreFile = ignoreFiles.some(item => {
 			return style.source.input.file.match(item);
 		});
 
 		style.walkComments(comment => {
 			if (comment && DARKMODE_COMMENTS_ALL_OFF.test(comment.text)) {
-				skipFile = true;
+				ignoreFile = true;
 			}
 		});
 
-		if (skipFile) {
+		if (ignoreFile) {
 			return;
 		}
 
@@ -218,7 +220,7 @@ module.exports = postcss.plugin("postcss-darkmode", function(opts) {
 		style.walkDecls(function(decl) {
 			// CSS 中既有的 darkmode media query 不处理
 			if (
-				skipExistingDarkMediaQuery &&
+				ignoreExistingDarkMediaQuery &&
 				decl.parent &&
 				decl.parent.parent &&
 				decl.parent.parent.name === "media" &&
@@ -284,11 +286,11 @@ module.exports = postcss.plugin("postcss-darkmode", function(opts) {
 			// 选择器处理
 			let selector = decl.parent.selector;
 			if (inject && injectSelector) {
-				if (decl.parent.selector === baseSelector) {
-					selector = selector + injectSelector;
-				} else {
-					selector = injectSelector + " " + selector;
-				}
+				selector = modifySelectors(
+					selector,
+					baseSelector,
+					injectSelector
+				);
 			}
 
 			// 一些包含颜色的属性
@@ -347,7 +349,7 @@ function getSplitFilename(filePath, dir, suffix) {
 
 	let destDir = path.join(fileDir, dir);
 
-	var position = fileName.lastIndexOf("."),
+	let position = fileName.lastIndexOf("."),
 		result = "";
 
 	result = fileName.substring(0, position);
@@ -361,4 +363,22 @@ function saveFile(filepath, css) {
 	if (css) {
 		fs.writeFileSync(filepath, css);
 	}
+}
+
+function modifySelectors(selectors, baseSelector, injectSelector) {
+	let sel = selectors.split(",");
+	let result = [];
+	sel.forEach(item => {
+		item = item.replace(/[\n\t]/g, "");
+		if (injectSelector) {
+			if (item === baseSelector) {
+				result.push(item + injectSelector);
+			} else {
+				result.push(injectSelector + " " + item);
+			}
+		} else {
+			result.push(item);
+		}
+	});
+	return result.join(",");
 }

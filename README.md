@@ -20,8 +20,8 @@ $ npm install postcss-darkmode --save-dev
         	["#ff6022", "#f25b20"], // #ff6022 替换为 #f25b20
         ]
     ```
--   `skipExistingDarkMediaQuery` (boolean)： 不处理 css 文件中已有的 darmkmode Media Query 中的颜色规则， 默认为 true
--   `excludeFiles`(array): 不需要深色转化的文件，支持正则匹配， 如 `excludeFiles: ["aaa.css", /bbb\.css/],`
+-   `ignoreExistingDarkMediaQuery` (boolean)： 不处理 css 文件中已有的 darmkmode Media Query 中的颜色规则， 默认为 true
+-   `ignoreFiles`(array): 不需要深色转化的文件，支持正则匹配， 如 `ignoreFiles: ["aaa.css", /bbb\.css/],`
 
 ## Control Comments 注释控制
 
@@ -79,8 +79,8 @@ module.exports = {
 										["#a1a1a1", "rgba(233, 237, 243, 0.1)"],
 										["rgba(244, 20, 20, 0.3)", "#E91E63"],
 									],
-									skipExistingDarkMediaQuery: true,
-									excludeFiles: ["style.scss"], // 不需要深色转化的文件，支持正则匹配
+									ignoreExistingDarkMediaQuery: true,
+									ignoreFiles: ["style.scss"], // 不需要深色转化的文件，支持正则匹配
 									splitFiles: {
 										enable: false, // 是否将深色样式分离为一个新的css文件
 										suffix: ".darkmode", //深色css文件名后缀，比如 filename.css 的分离出深色文件： filename.darkmode.css
@@ -124,8 +124,8 @@ gulp.task("css", () => {
 						["#a1a1a1", "rgba(233, 237, 243, 0.1)"],
 						["rgba(244, 20, 20, 0.3)", "#E91E63"],
 					],
-					skipExistingDarkMediaQuery: true, //不处理 css 文件中已有的 darmkmode Media Query 中的颜色规则， 默认为 true
-					excludeFiles: ["style.scss"], // 不需要深色转化的文件，支持正则匹配
+					ignoreExistingDarkMediaQuery: true, //不处理 css 文件中已有的 darmkmode Media Query 中的颜色规则， 默认为 true
+					ignoreFiles: ["style.scss"], // 不需要深色转化的文件，支持正则匹配
 					splitFiles: {
 						enable: false, // 是否将深色样式分离为一个新的css文件
 						suffix: ".darkmode", //深色css文件名后缀，比如 filename.css 的分离出深色文件： filename.darkmode.css

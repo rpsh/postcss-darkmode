@@ -53,3 +53,8 @@ html {
 	-webkit-background-clip: text;
 	background-image: linear-gradient(180deg, green 0, orange 100%);
 }
+.foo2,
+	.foo3 .fo,
+				html {
+	color: red;
+}
