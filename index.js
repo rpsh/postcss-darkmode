@@ -80,7 +80,9 @@ function modifyColor(decl, dictColors, assignColor, ratio) {
 
 	let hslColor = inputColor.hsl();
 
-	if (hslColor.color) {
+	if(hslColor && hslColor.valpha === 0){
+		return 'transparent'
+	}else if (hslColor.color) {
 		let light = hslColor.color[2];
 		let h = hslColor.color[0],
 			s = hslColor.color[1];
@@ -235,7 +237,7 @@ module.exports = postcss.plugin("postcss-darkmode", function(opts) {
 			// 不做处理
 			if (
 				!decl.value ||
-				decl.value === "transparent" ||
+				// decl.value === "transparent" ||
 				decl.prop.includes("text-fill-color")
 			) {
 				return;

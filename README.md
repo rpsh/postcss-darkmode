@@ -29,6 +29,8 @@ $ npm install postcss-darkmode --save-dev
 -   `/* darkmode: ignore next */` Disable Darkmode translations only for the next property. 只忽略紧跟这个注释后的一条
 -   `/* darkmode: {#f00} */` Replace the next property with `#f00`. 使用 `#f00` 替换紧跟这个注释后的规则的值
 
+如果发现未生效，可能是你所用的打包程序在 postcss-darkmode 处理之前已经将注释过滤掉了，你可以在注释上添加叹号 `!` ，如 `/*! darmkmode: off */` 来规避注释被过滤。
+
 ## Usage 使用
 
 ### Use webpack
