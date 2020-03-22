@@ -1,27 +1,27 @@
 {
-	"name": "postcss-darkmode",
-	"version": "1.0.13",
-	"description": "PostCSS Darkmode plugin that generates darkmode style from css file",
-	"keywords": [
-		"postcss",
-		"postcss Darkmode",
-		"Darkmode",
-		"css"
-	],
-	"main": "index.js",
-	"scripts": {
-		"test": "echo \"Error: no test specified\" && exit 1"
-	},
-	"author": "rpsh",
-	"license": "MIT",
-	"repository": "rpsh/postcss-darkmode",
-	"bugs": {
-		"url": "https://github.com/rpsh/postcss-darkmode/issues"
-	},
-	"homepage": "https://github.com/rpsh/postcss-darkmode",
-	"dependencies": {
-		"color": "^3.1.2",
-		"cssnano": "^4.1.10",
-		"gulp-postcss": "^8.0.0"
-	}
+  "name": "postcss-darkmode",
+  "version": "1.0.14",
+  "description": "PostCSS Darkmode plugin that generates darkmode style from css file",
+  "keywords": [
+    "postcss",
+    "postcss Darkmode",
+    "Darkmode",
+    "css"
+  ],
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "rpsh",
+  "license": "MIT",
+  "repository": "rpsh/postcss-darkmode",
+  "bugs": {
+    "url": "https://github.com/rpsh/postcss-darkmode/issues"
+  },
+  "homepage": "https://github.com/rpsh/postcss-darkmode",
+  "dependencies": {
+    "color": "^3.1.2",
+    "cssnano": "^4.1.10",
+    "gulp-postcss": "^8.0.0"
+  }
 }
