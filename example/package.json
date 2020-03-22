@@ -1,24 +1,25 @@
 {
-	"name": "postcss-darkmode-example",
-	"version": "1.0.0",
-	"description": "example",
-	"main": "gulpfile.js",
-	"scripts": {
-		"test": "echo \"Error: no test specified\" && exit 1"
-	},
-	"author": "",
-	"license": "MIT",
-	"devDependencies": {
-		"css-loader": "^3.2.0",
-		"del": "^3.0.0",
-		"gulp-postcss": "^8.0.0",
-		"gulp-sass": "^4.0.2",
-		"mini-css-extract-plugin": "^0.8.0",
-		"node-sass": "^4.13.0",
-		"postcss-darkmode": "^1.0.11",
-		"postcss-loader": "^3.0.0",
-		"sass-loader": "^8.0.0",
-		"style-loader": "^1.0.0",
-		"webpack": "^4.41.2"
-	}
+  "name": "postcss-darkmode-example",
+  "version": "1.0.0",
+  "description": "example",
+  "main": "gulpfile.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "css-loader": "^3.2.0",
+    "del": "^3.0.0",
+    "gulp": "^3.9.1",
+    "gulp-postcss": "^8.0.0",
+    "gulp-sass": "^4.0.2",
+    "mini-css-extract-plugin": "^0.8.0",
+    "node-sass": "^4.13.0",
+    "postcss-darkmode": "^1.0.11",
+    "postcss-loader": "^3.0.0",
+    "sass-loader": "^8.0.0",
+    "style-loader": "^1.0.0",
+    "webpack": "^4.41.2"
+  }
 }
