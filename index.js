@@ -317,7 +317,7 @@ function getSplitFilename(filePath, dir, suffix) {
   let fileDir = path.dirname(filePath),
     fileName = path.basename(filePath);
 
-  let destDir = path.join(fileDir, dir);
+  let destDir = path.resolve(fileDir, dir);
 
   let position = fileName.lastIndexOf('.'),
     result = '';
