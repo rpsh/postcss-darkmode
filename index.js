@@ -120,7 +120,8 @@ module.exports = postcss.plugin('postcss-darkmode', function(opts) {
   let ignoreFiles = opts.ignoreFiles || opts.excludeFiles || [];
   let inject = (opts.inject && opts.inject.enable) || undefined,
     injectSelector = (opts.inject && opts.inject.injectSelector) || undefined,
-    baseSelector = (opts.inject && opts.inject.baseSelector) || undefined;
+    baseSelector = (opts.inject && opts.inject.baseSelector) || undefined,
+    keepMediaQuery = (opts.inject && opts.inject.keepMediaQuery) || undefined;
 
   let split = opts.splitFiles && opts.splitFiles.enable,
     splitSuffix = (opts.splitFiles && opts.splitFiles.suffix) || '.darkmode',
@@ -245,13 +246,16 @@ module.exports = postcss.plugin('postcss-darkmode', function(opts) {
       return;
     }
 
-    let media = postcss.parse('@media (prefers-color-scheme: dark) {}');
-    let node = media.first;
+    // let media = postcss.parse('@media (prefers-color-scheme: dark) {}');
+    // let node = media.first;
 
-    if (inject || split) {
-      media = postcss.root();
-      node = media;
-    }
+    // if ((inject && !keepMediaQuery) ||split) {
+    //   media = postcss.root();
+    //   node = media;
+    // }
+
+    let media = postcss.root();
+    let node = media;
 
     let ratio = Number.isInteger(opts.ratio) ? Number(opts.ratio) / 100 : 0.1;
     if (ratio > 1) {
@@ -303,6 +307,13 @@ module.exports = postcss.plugin('postcss-darkmode', function(opts) {
     let minify = await postcss([cssnano]).process(media, {
       from: undefined,
     });
+
+    // 需要媒体查询的方式
+    if ((!inject || (inject && keepMediaQuery)) && !split) {
+      const reg = new RegExp(injectSelector, 'g')
+      const mediaCss = `@media (prefers-color-scheme: dark) {${minify.css.replace(reg, '')}}`
+      minify.css = mediaCss + (inject ? minify.css :  '')
+    }
 
     if (split && splitDestDir) {
       let splitFilePath = getSplitFilename(style.source.input.file, splitDestDir, splitSuffix);
