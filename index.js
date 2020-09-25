@@ -274,6 +274,12 @@ module.exports = postcss.plugin('postcss-darkmode', function(opts) {
 
       // 选择器处理
       let selector = decl.parent.selector;
+
+      // 如果选择器已经是暗色的
+      if (selector.indexOf(injectSelector) === 0) {
+        return false;
+      }
+
       if (inject && injectSelector) {
         selector = modifySelectors(selector, baseSelector, injectSelector);
       }
