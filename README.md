@@ -7,7 +7,7 @@ Generate darkmode style from css file.
 ## Installation 安装
 
 ```bash
-$ npm install postcss-darkmode --save-dev
+$ npm install postcss postcss-darkmode --save-dev
 ```
 
 ## Options 配置

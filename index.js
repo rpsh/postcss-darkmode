@@ -1,6 +1,5 @@
-const postcss = require('postcss');
-const path = require('path');
 const fs = require('fs');
+const path = require('path');
 const Color = require('color');
 const cssnano = require('cssnano');
 
@@ -109,227 +108,6 @@ function modifyColor(decl, dictColors, assignColor, ratio) {
   }
 }
 
-module.exports = postcss.plugin('postcss-darkmode', function(opts) {
-  opts = opts || {};
-
-  let ignoreExistingDarkMediaQuery =
-    opts.ignoreExistingDarkMediaQuery === undefined && opts.skipExistingDarkMediaQuery === undefined
-      ? true
-      : opts.ignoreExistingDarkMediaQuery || opts.skipExistingDarkMediaQuery;
-
-  let ignoreFiles = opts.ignoreFiles || opts.excludeFiles || [];
-  let inject = (opts.inject && opts.inject.enable) || undefined,
-    injectSelector = (opts.inject && opts.inject.injectSelector) || undefined,
-    baseSelector = (opts.inject && opts.inject.baseSelector) || undefined,
-    keepMediaQuery = (opts.inject && opts.inject.keepMediaQuery) || undefined;
-
-  let split = opts.splitFiles && opts.splitFiles.enable,
-    splitSuffix = (opts.splitFiles && opts.splitFiles.suffix) || '.darkmode',
-    splitDestDir = (opts.splitFiles && opts.splitFiles.destDir) || '';
-
-  let dictColors = [];
-  opts.assignColors.forEach((item) => {
-    dictColors.push(
-      parseColor(item[0])
-        .rgb()
-        .string(),
-    );
-  });
-
-  return async function(style) {
-    function checkDisabled(node, result) {
-      if (!node) return false;
-
-      if (node._darkmodeDisabled !== undefined) {
-        return node._darkmodeDisabled;
-      }
-
-      if (node.parent) {
-        let p = node.prev();
-
-        // 注释声明忽略下一行
-        if (p && p.type === 'comment' && DARKMODE_IGNORE_NEXT.test(p.text)) {
-          node._darkmodeDisabled = true;
-          node._darkmodeSelfDisabled = true;
-          return true;
-        }
-
-        // 注释声明指定替换颜色
-        if (p && p.type === 'comment' && DARKMODE_ASSIGN.test(p.text)) {
-          let m = p.text.match(/\{([^\}]*)\}/i);
-          if (m && m[1]) {
-            node._assignValue = m[1];
-          }
-        }
-      }
-
-      let value = null;
-      if (node.nodes) {
-        let status;
-        node.each((i) => {
-          if (i.type !== 'comment') return;
-          if (DARKMODE_COMMENTS.test(i.text)) {
-            if (typeof status === 'undefined') {
-              status = /on/i.test(i.text);
-            }
-          }
-        });
-
-        if (status !== undefined) {
-          value = !status;
-        }
-      }
-      if (!node.nodes || value === null) {
-        if (node.parent) {
-          let isParentDisabled = checkDisabled(node.parent);
-          if (node.parent._darkmodeSelfDisabled === true) {
-            value = false;
-          } else {
-            value = isParentDisabled;
-          }
-        } else {
-          value = false;
-        }
-      }
-      node._darkmodeDisabled = value;
-      return value;
-    }
-
-    let ignoreFile = ignoreFiles.some((item) => {
-      return style.source.input.file.match(item);
-    });
-
-    style.walkComments((comment) => {
-      if (comment && DARKMODE_COMMENTS_ALL_OFF.test(comment.text)) {
-        ignoreFile = true;
-      }
-    });
-
-    if (ignoreFile) {
-      return;
-    }
-
-    let rules = [];
-    style.walkDecls(function(decl) {
-      // CSS 中既有的 darkmode media query 不处理
-      if (
-        ignoreExistingDarkMediaQuery &&
-        decl.parent &&
-        decl.parent.parent &&
-        decl.parent.parent.name === 'media' &&
-        decl.parent.parent.params === '(prefers-color-scheme: dark)'
-      ) {
-        return undefined;
-      }
-
-      // 注释声明不需要处理
-      if (checkDisabled(decl)) return undefined;
-
-      // 不做处理
-      if (
-        !decl.value ||
-        // decl.value === "transparent" ||
-        decl.prop.includes('text-fill-color')
-      ) {
-        return;
-      }
-
-      let inputColor = parseDeclColor(decl);
-
-      if (!inputColor && !decl._assignValue) {
-        return;
-      }
-
-      rules.push(decl);
-    });
-    if (!rules.length) {
-      return;
-    }
-
-    // let media = postcss.parse('@media (prefers-color-scheme: dark) {}');
-    // let node = media.first;
-
-    // if ((inject && !keepMediaQuery) ||split) {
-    //   media = postcss.root();
-    //   node = media;
-    // }
-
-    let media = postcss.root();
-    let node = media;
-
-    let ratio = Number.isInteger(opts.ratio) ? Number(opts.ratio) / 100 : 0.1;
-    if (ratio > 1) {
-      ratio = 1;
-    }
-    if (ratio < 0) {
-      ratio = 0;
-    }
-
-    rules.forEach((decl, index) => {
-      let outputColor = modifyColor(decl, dictColors, opts.assignColors, ratio);
-
-      if (!outputColor) {
-        return false;
-      }
-
-      // 选择器处理
-      let selector = decl.parent.selector;
-
-      // 如果选择器已经是暗色的
-      if (selector.indexOf(injectSelector) === 0) {
-        return false;
-      }
-
-      if (inject && injectSelector) {
-        selector = modifySelectors(selector, baseSelector, injectSelector);
-      }
-
-      // 一些包含颜色的属性
-      if (decl && !decl._assignValue && !parseColor(decl.value)) {
-        if (
-          decl.prop.includes('border') ||
-          decl.prop.includes('outline') ||
-          decl.prop.includes('column-rule') ||
-          decl.prop.includes('text-emphasis') ||
-          decl.prop.includes('text-decoration')
-        ) {
-          if (outputColor) {
-            node.append(`${selector}{${decl.prop}-color:${outputColor}}`);
-          }
-        } else if (decl.prop === 'background' && !~decl.prop.indexOf('gradient')) {
-          node.append(`${selector}{${decl.prop}-color:${outputColor}}`);
-        } else if (decl.prop === 'box-shadow') {
-          let result = decl.value.match(COLOR_REGEXP);
-          if (result && result[0]) {
-            let _value = decl.value.replace(result[0], outputColor);
-            node.append(`${selector}{${decl.prop}:${_value}}`);
-          }
-        }
-      } else {
-        node.append(`${selector}{${decl.prop}:${outputColor}}`);
-      }
-    });
-    // 合并相同的选择器
-    let minify = await postcss([cssnano]).process(media, {
-      from: undefined,
-    });
-
-    // 需要媒体查询的方式
-    if ((!inject || (inject && keepMediaQuery)) && !split) {
-      const reg = new RegExp(injectSelector, 'g')
-      const mediaCss = `@media (prefers-color-scheme: dark) {${minify.css.replace(reg, '')}}`
-      minify.css = mediaCss + (inject ? minify.css :  '')
-    }
-
-    if (split && splitDestDir) {
-      let splitFilePath = getSplitFilename(style.source.input.file, splitDestDir, splitSuffix);
-      saveFile(splitFilePath, minify.css);
-    } else {
-      style.append(minify.css);
-    }
-  };
-});
-
 function getSplitFilename(filePath, dir, suffix) {
   let fileDir = path.dirname(filePath),
     fileName = path.basename(filePath);
@@ -384,3 +162,228 @@ function modifySelectors(selectors, baseSelector, injectSelector) {
   });
   return result.join(',');
 }
+
+module.exports = function(opts) {
+  opts = opts || {};
+
+  let ignoreExistingDarkMediaQuery =
+    opts.ignoreExistingDarkMediaQuery === undefined && opts.skipExistingDarkMediaQuery === undefined
+      ? true
+      : opts.ignoreExistingDarkMediaQuery || opts.skipExistingDarkMediaQuery;
+
+  let ignoreFiles = opts.ignoreFiles || opts.excludeFiles || [];
+  let inject = (opts.inject && opts.inject.enable) || undefined,
+    injectSelector = (opts.inject && opts.inject.injectSelector) || undefined,
+    baseSelector = (opts.inject && opts.inject.baseSelector) || undefined,
+    keepMediaQuery = (opts.inject && opts.inject.keepMediaQuery) || undefined;
+
+  let split = opts.splitFiles && opts.splitFiles.enable,
+    splitSuffix = (opts.splitFiles && opts.splitFiles.suffix) || '.darkmode',
+    splitDestDir = (opts.splitFiles && opts.splitFiles.destDir) || '';
+
+  let dictColors = [];
+  opts.assignColors.forEach((item) => {
+    dictColors.push(
+      parseColor(item[0])
+        .rgb()
+        .string(),
+    );
+  });
+
+  return {
+    postcssPlugin: 'postcss-darkmode',
+    Once: async function(style, { postcss }) {
+      function checkDisabled(node, result) {
+        if (!node) return false;
+
+        if (node._darkmodeDisabled !== undefined) {
+          return node._darkmodeDisabled;
+        }
+
+        if (node.parent) {
+          let p = node.prev();
+
+          // 注释声明忽略下一行
+          if (p && p.type === 'comment' && DARKMODE_IGNORE_NEXT.test(p.text)) {
+            node._darkmodeDisabled = true;
+            node._darkmodeSelfDisabled = true;
+            return true;
+          }
+
+          // 注释声明指定替换颜色
+          if (p && p.type === 'comment' && DARKMODE_ASSIGN.test(p.text)) {
+            let m = p.text.match(/\{([^\}]*)\}/i);
+            if (m && m[1]) {
+              node._assignValue = m[1];
+            }
+          }
+        }
+
+        let value = null;
+        if (node.nodes) {
+          let status;
+          node.each((i) => {
+            if (i.type !== 'comment') return;
+            if (DARKMODE_COMMENTS.test(i.text)) {
+              if (typeof status === 'undefined') {
+                status = /on/i.test(i.text);
+              }
+            }
+          });
+
+          if (status !== undefined) {
+            value = !status;
+          }
+        }
+        if (!node.nodes || value === null) {
+          if (node.parent) {
+            let isParentDisabled = checkDisabled(node.parent);
+            if (node.parent._darkmodeSelfDisabled === true) {
+              value = false;
+            } else {
+              value = isParentDisabled;
+            }
+          } else {
+            value = false;
+          }
+        }
+        node._darkmodeDisabled = value;
+        return value;
+      }
+
+      let ignoreFile = ignoreFiles.some((item) => {
+        return style.source.input.file.match(item);
+      });
+
+      style.walkComments((comment) => {
+        if (comment && DARKMODE_COMMENTS_ALL_OFF.test(comment.text)) {
+          ignoreFile = true;
+        }
+      });
+
+      if (ignoreFile) {
+        return;
+      }
+
+      let rules = [];
+      style.walkDecls(function(decl) {
+        // CSS 中既有的 darkmode media query 不处理
+        if (
+          ignoreExistingDarkMediaQuery &&
+          decl.parent &&
+          decl.parent.parent &&
+          decl.parent.parent.name === 'media' &&
+          decl.parent.parent.params === '(prefers-color-scheme: dark)'
+        ) {
+          return undefined;
+        }
+
+        // 注释声明不需要处理
+        if (checkDisabled(decl)) return undefined;
+
+        // 不做处理
+        if (
+          !decl.value ||
+          // decl.value === "transparent" ||
+          decl.prop.includes('text-fill-color')
+        ) {
+          return;
+        }
+
+        let inputColor = parseDeclColor(decl);
+
+        if (!inputColor && !decl._assignValue) {
+          return;
+        }
+
+        rules.push(decl);
+      });
+      if (!rules.length) {
+        return;
+      }
+
+      // let media = postcss.parse('@media (prefers-color-scheme: dark) {}');
+      // let node = media.first;
+
+      // if ((inject && !keepMediaQuery) ||split) {
+      //   media = postcss.root();
+      //   node = media;
+      // }
+
+      let media = postcss.root();
+      let node = media;
+
+      let ratio = Number.isInteger(opts.ratio) ? Number(opts.ratio) / 100 : 0.1;
+      if (ratio > 1) {
+        ratio = 1;
+      }
+      if (ratio < 0) {
+        ratio = 0;
+      }
+
+      rules.forEach((decl, index) => {
+        let outputColor = modifyColor(decl, dictColors, opts.assignColors, ratio);
+
+        if (!outputColor) {
+          return false;
+        }
+
+        // 选择器处理
+        let selector = decl.parent.selector;
+
+        // 如果选择器已经是暗色的
+        if (selector.indexOf(injectSelector) === 0) {
+          return false;
+        }
+
+        if (inject && injectSelector) {
+          selector = modifySelectors(selector, baseSelector, injectSelector);
+        }
+
+        // 一些包含颜色的属性
+        if (decl && !decl._assignValue && !parseColor(decl.value)) {
+          if (
+            decl.prop.includes('border') ||
+            decl.prop.includes('outline') ||
+            decl.prop.includes('column-rule') ||
+            decl.prop.includes('text-emphasis') ||
+            decl.prop.includes('text-decoration')
+          ) {
+            if (outputColor) {
+              node.append(`${selector}{${decl.prop}-color:${outputColor}}`);
+            }
+          } else if (decl.prop === 'background' && !~decl.prop.indexOf('gradient')) {
+            node.append(`${selector}{${decl.prop}-color:${outputColor}}`);
+          } else if (decl.prop === 'box-shadow') {
+            let result = decl.value.match(COLOR_REGEXP);
+            if (result && result[0]) {
+              let _value = decl.value.replace(result[0], outputColor);
+              node.append(`${selector}{${decl.prop}:${_value}}`);
+            }
+          }
+        } else {
+          node.append(`${selector}{${decl.prop}:${outputColor}}`);
+        }
+      });
+      // 合并相同的选择器
+      let minify = await postcss([cssnano]).process(media, {
+        from: undefined,
+      });
+
+      // 需要媒体查询的方式
+      if ((!inject || (inject && keepMediaQuery)) && !split) {
+        const reg = new RegExp(injectSelector, 'g')
+        const mediaCss = `@media (prefers-color-scheme: dark) {${minify.css.replace(reg, '')}}`
+        minify.css = mediaCss + (inject ? minify.css :  '')
+      }
+
+      if (split && splitDestDir) {
+        let splitFilePath = getSplitFilename(style.source.input.file, splitDestDir, splitSuffix);
+        saveFile(splitFilePath, minify.css);
+      } else {
+        style.append(minify.css);
+      }
+    }
+  }
+};
+module.exports.postcss = true;

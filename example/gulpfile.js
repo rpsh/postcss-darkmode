@@ -1,9 +1,10 @@
-const gulp = require("gulp");
-const sass = require("gulp-sass");
-const postcss = require("gulp-postcss");
-// const darkmode = require("postcss-darkmode");
-const darkmode = require("../index");
 const del = require("del");
+const gulp = require("gulp");
+const sass = require("gulp-sass")(require("sass"));
+const postcss = require("gulp-postcss");
+
+const darkmode = require("../index");
+// const darkmode = require("postcss-darkmode");
 
 gulp.task("clean", () => {
 	return del(["./dist/css"]);
@@ -51,4 +52,4 @@ gulp.task("sass", function() {
 		.pipe(gulp.dest("./dist/css"));
 });
 
-gulp.task("default", ["sass"]);
+gulp.task("default", gulp.series(["sass"]));
